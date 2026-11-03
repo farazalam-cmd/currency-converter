@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="Convert between 166 currencies using exchange rates published on 3 November 2026. Free currency converter with a rates table, popular conversions, and plain-English explanations." />
+<link rel="icon" href="data:," />
+<title>Currency Converter — Convert 166 Currencies</title>
+<style>
+  :root{
+    --bg:#ffffff; --surface:#eef4f1; --surface2:#f7f9f8; --card:#ffffff;
+    --ink:#15211d; --muted:#5b6b65; --line:#d8e2dd;
+    --teal:#0e6b5c; --teal-dark:#0a4f44; --teal-soft:#dcebe6;
+    --amber:#c77f0a; --amber-soft:#fdf3dd;
+    --danger:#b3261e; --focus:#0e6b5c;
+    --serif:"Charter","Bitstream Charter",Georgia,"Times New Roman",serif;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0d1512; --surface:#16211d; --surface2:#121b18; --card:#17241f;
+      --ink:#eaf2ee; --muted:#a7b8b1; --line:#2a3a34;
+      --teal:#5ec2b0; --teal-dark:#8fd6c8; --teal-soft:#1d322c;
+      --amber:#eab54a; --amber-soft:#2c2616; --danger:#ff8a80; --focus:#8fd6c8;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:var(--teal);text-underline-offset:3px}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:4px}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+  /* Nav */
+  nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:11px 20px}
+  .nav-in .wordmark{font-family:var(--serif);font-weight:700;font-size:19px;color:var(--ink);text-decoration:none;white-space:nowrap}
+  .nav-in .wordmark span{color:var(--teal)}
+  .nav-links{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+  .nav-links a{color:var(--muted);text-decoration:none;font-size:14.5px;font-weight:600;padding:7px 10px;border-radius:999px}
+  .nav-links a:hover{color:var(--ink);background:var(--surface)}
+  .snapshot-pill{font-size:12.5px;font-weight:700;color:var(--teal-dark);background:var(--teal-soft);border:1px solid var(--line);padding:6px 10px;border-radius:999px;white-space:nowrap}
+  @media (prefers-color-scheme: dark){.snapshot-pill{color:var(--teal-dark)}}
+  /* Head */
+  header.lead{padding:34px 0 8px}
+  h1{font-family:var(--serif);font-size:clamp(34px,5vw,50px);line-height:1.08;letter-spacing:-.01em;margin:0 0 10px;max-width:720px}
+  .lede{font-size:18px;color:var(--muted);max-width:680px;margin:0 0 6px}
+  .asof{font-size:14px;color:var(--muted);margin:0 0 20px}
+  .asof strong{color:var(--ink)}
+  /* Converter */
+  .converter{background:var(--card);border:1px solid var(--line);border-top:5px solid var(--teal);border-radius:18px;padding:22px;box-shadow:0 10px 30px rgba(10,40,32,.08)}
+  @media (prefers-color-scheme: dark){.converter{box-shadow:none}}
+  .conv-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end}
+  @media (max-width:640px){.conv-grid{grid-template-columns:1fr;}.swap-row{display:flex;justify-content:center}}
+  label{display:block;font-size:13.5px;font-weight:700;letter-spacing:.02em;margin:0 0 7px}
+  .field-hint{font-weight:400;color:var(--muted);font-size:13px}
+  input[type="number"],select{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:13px 12px;appearance:none}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%235b6b65' stroke-width='2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;cursor:pointer}
+  input[type="number"]:hover,select:hover{border-color:var(--teal)}
+  .amount-row{display:grid;grid-template-columns:1fr;gap:14px}
+  .swap-btn{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:var(--amber-soft);color:var(--amber);font-size:22px;cursor:pointer;line-height:1}
+  .swap-btn:hover{border-color:var(--amber)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
+  .chip{border:1px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer}
+  .chip:hover{border-color:var(--teal);color:var(--teal)}
+  .chip[aria-pressed="true"]{background:var(--teal);border-color:var(--teal);color:#fff}
+  .result{margin-top:20px;border-top:1px dashed var(--line);padding-top:18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+  @media (max-width:560px){.result{grid-template-columns:1fr}}
+  .result-label{font-size:13.5px;color:var(--muted);margin:0 0 4px}
+  .result-value{font-family:var(--serif);font-size:clamp(30px,6vw,42px);line-height:1.1;margin:0;font-variant-numeric:tabular-nums;word-break:break-word}
+  .result-sub{color:var(--muted);font-size:14.5px;margin:8px 0 0}
+  .result-sub code{font-family:var(--mono);font-size:13.5px;color:var(--ink)}
+  .copy-btn{border:1.5px solid var(--teal);background:transparent;color:var(--teal);font:inherit;font-weight:700;font-size:14.5px;padding:10px 16px;border-radius:10px;cursor:pointer;white-space:nowrap}
+  .copy-btn:hover{background:var(--teal);color:#fff}
+  .copy-note{font-size:13px;color:var(--teal);min-height:18px;margin:8px 0 0;text-align:right}
+  @media (max-width:560px){.copy-note{text-align:left}}
+  .error{color:var(--danger);font-size:14px;margin:10px 0 0;display:none}
+  .error.show{display:block}
+  .presets{margin-top:18px}
+  .presets p{font-size:13.5px;font-weight:700;margin:0 0 8px}
+  .preset-row{display:flex;gap:8px;flex-wrap:wrap}
+  .preset{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:14px;font-weight:600;padding:8px 12px;border-radius:8px;cursor:pointer}
+  .preset:hover{border-color:var(--teal)}
+  /* Sections */
+  section{padding:38px 0 6px;scroll-margin-top:70px}
+  h2{font-family:var(--serif);font-size:clamp(25px,3.4vw,32px);line-height:1.15;margin:0 0 8px;letter-spacing:-.01em}
+  h3{font-size:18px;margin:0 0 6px}
+  .section-intro{color:var(--muted);max-width:700px;margin:0 0 18px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:700px){.two-col{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card p{margin:0;color:var(--muted)}
+  .card p strong,.card h3{color:var(--ink)}
+  .num{font-family:var(--serif);font-size:26px;color:var(--teal);display:block;margin-bottom:6px}
+  /* Popular cards */
+  .pop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:820px){.pop-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.pop-grid{grid-template-columns:1fr}}
+  .pop-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;text-align:left;font:inherit;color:var(--ink);width:100%}
+  .pop-card:hover{border-color:var(--teal)}
+  .pop-pair{font-weight:800;font-size:15px;letter-spacing:.02em}
+  .pop-pair .arr{color:var(--teal);font-weight:400;padding:0 4px}
+  .pop-rate{font-family:var(--serif);font-size:22px;margin:8px 0 2px;font-variant-numeric:tabular-nums}
+  .pop-sub{color:var(--muted);font-size:13.5px;margin:0}
+  /* Rates table */
+  .controls{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+  .controls .ctl{flex:1;min-width:200px}
+  .controls label{margin-bottom:6px}
+  .table-wrap{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+  table{width:100%;border-collapse:collapse;font-size:15.5px}
+  @media (max-width:640px){
+    /* Reflow the table into stacked cards so no column is cut off on phones. */
+    .table-wrap{overflow:visible;border:0;background:transparent;border-radius:0}
+    table,table tbody,table tr,table td{display:block;width:100%}
+    table thead{display:none}
+    table tbody tr{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:10px 14px}
+    table tbody tr:hover{background:var(--card)}
+    table td{border:0;padding:3px 0;overflow-wrap:break-word}
+    table td.cur-name{color:var(--muted);font-size:14px}
+    table td.num-r{text-align:left}
+    table td.num-r::before{content:attr(data-label);display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:6px}
+    table tr.empty-row td{text-align:center;padding:14px}
+  }
+  th{text-align:left;font-size:13px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:12px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--surface2)}
+  td.code{font-weight:800;white-space:nowrap}
+  td.num-r{text-align:right}
+  th.num-r{text-align:right}
+  .table-note{font-size:13.5px;color:var(--muted);margin:10px 2px 0}
+  .empty-row td{color:var(--muted);text-align:center;padding:22px}
+  /* FAQ */
+  details{border:1px solid var(--line);border-radius:10px;background:var(--card);margin-bottom:10px;overflow:hidden}
+  summary{cursor:pointer;font-weight:700;padding:15px 17px;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:"+";font-size:22px;font-weight:400;color:var(--teal);flex:none}
+  details[open ] summary::after{content:"–"}
+  details p{margin:0;padding:0 17px 16px;color:var(--muted)}
+  details p strong{color:var(--ink)}
+  /* Info sections */
+  .info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:820px){.info-grid{grid-template-columns:1fr}}
+  .info-grid h3{font-family:var(--serif);font-size:20px}
+  .info-grid p,.info-grid li{color:var(--muted);font-size:15px}
+  .info-grid ul{margin:8px 0 0;padding-left:19px}
+  footer{margin-top:46px;border-top:1px solid var(--line);padding:26px 0 40px;color:var(--muted);font-size:14px}
+  footer p{margin:0 0 8px;max-width:760px}
+  .small{font-size:13.5px}
+  .formula{background:var(--surface);border-radius:10px;padding:14px 16px;font-family:var(--mono);font-size:14.5px;overflow-x:auto;white-space:nowrap;margin:14px 0}
+  .formula b{color:var(--teal)}
+</style>
+</head>
+<body>
+<nav aria-label="Page sections">
+  <div class="wrap nav-in">
+    <a class="wordmark" href="#top">Currency <span>Converter</span></a>
+    <div class="nav-links">
+      <a href="#converter">Converter</a>
+      <a href="#rates">Rates table</a>
+      <a href="#popular">Popular</a>
+      <a href="#how">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="#about">About</a>
+    </div>
+    <span class="snapshot-pill" title="Exchange rates shown on this page">Rates: 3 Nov 2026</span>
+  </div>
+</nav>
+
+<main class="wrap" id="top">
+  <header class="lead">
+    <h1>Convert between 166 currencies.</h1>
+    <p class="lede">Type an amount, pick two currencies, and get the converted value instantly &mdash; for 166 currencies, from US dollars and Indian rupees to euros, pounds, dirhams and yen.</p>
+    <p class="asof">Exchange-rate snapshot: <strong>3 November 2026, 5:32 AM IST</strong> (00:02 UTC), published by ExchangeRate-API. Rates move through the day &mdash; this page shows that snapshot, so check your bank or provider before sending money.</p>
+  </header>
+
+  <section class="converter" id="converter" aria-label="Currency converter" style="padding-top:22px">
+    <form id="conv-form" novalidate>
+      <div class="amount-row">
+        <div>
+          <label for="amount">Amount</label>
+          <input type="number" id="amount" inputmode="decimal" min="0" step="any" value="100" autocomplete="off" />
+        </div>
+      </div>
+      <div class="conv-grid" style="margin-top:14px">
+        <div>
+          <label for="from-cur">From <span class="field-hint" id="from-name"></span></label>
+          <select id="from-cur"></select>
+        </div>
+        <div class="swap-row">
+          <button type="button" class="swap-btn" id="swap" aria-label="Swap currencies" title="Swap currencies">&#8646;</button>
+        </div>
+        <div>
+          <label for="to-cur">To <span class="field-hint" id="to-name"></span></label>
+          <select id="to-cur"></select>
+        </div>
+      </div>
+      <p class="error" id="amount-error" role="alert">Enter an amount of 0 or more to convert.</p>
+      <div class="chips" role="group" aria-label="Quick amounts">
+        <button type="button" class="chip" data-amt="1">1</button>
+        <button type="button" class="chip" data-amt="10">10</button>
+        <button type="button" class="chip" data-amt="100" aria-pressed="true">100</button>
+        <button type="button" class="chip" data-amt="500">500</button>
+        <button type="button" class="chip" data-amt="1000">1,000</button>
+        <button type="button" class="chip" data-amt="10000">10,000</button>
+      </div>
+      <div class="result" aria-live="polite">
+        <div>
+          <p class="result-label" id="result-label">100 US dollars equals</p>
+          <p class="result-value" id="result-value">&mdash;</p>
+          <p class="result-sub" id="result-sub"></p>
+        </div>
+        <div>
+          <button type="button" class="copy-btn" id="copy-btn">Copy result</button>
+          <p class="copy-note" id="copy-note" aria-live="polite"></p>
+        </div>
+      </div>
+    </form>
+    <div class="presets">
+      <p>Popular conversions</p>
+      <div class="preset-row" id="preset-row"></div>
+    </div>
+  </section>
+
+  <section id="popular" aria-label="Popular conversions">
+    <h2>Popular conversions, at the snapshot rates</h2>
+    <p class="section-intro">Tap any card to load that pair into the converter above. Values are calculated from the 3 November 2026 snapshot.</p>
+    <div class="pop-grid" id="pop-grid"></div>
+  </section>
+
+  <section id="rates" aria-label="Exchange rates table">
+    <h2>Exchange rates table</h2>
+    <p class="section-intro">Pick a base currency, then search the full list. The table shows what 1 unit &mdash; and 100 units &mdash; of the base currency buys in each other currency, at the snapshot rates.</p>
+    <div class="controls">
+      <div class="ctl">
+        <label for="base-cur">Base currency</label>
+        <select id="base-cur"></select>
+      </div>
+      <div class="ctl">
+        <label for="rate-search">Search currencies</label>
+        <input type="search" id="rate-search" placeholder="Try &ldquo;rupee&rdquo;, &ldquo;EUR&rdquo;, or &ldquo;yen&rdquo;" autocomplete="off" style="width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--surface2);border:1.5px solid var(--line);border-radius:10px;padding:12px" />
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">Currency</th><th scope="col" class="num-r" id="th-one">1 USD =</th><th scope="col" class="num-r" id="th-hundred">100 USD =</th></tr>
+        </thead>
+        <tbody id="rates-body"></tbody>
+      </table>
+    </div>
+    <p class="table-note" id="rates-count"></p>
+    <p class="table-note">Mid-market snapshot rates from ExchangeRate-API, last updated 3 November 2026, 00:02 UTC. The next scheduled update from the source was 4 November 2026, 00:18 UTC. Banks and money-transfer services usually add their own margin and fees on top of these rates.</p>
+  </section>
+
+  <section id="how" aria-label="How it works">
+    <h2>How it works</h2>
+    <p class="section-intro">No account, no sign-up, and nothing you type leaves this page &mdash; every calculation happens in your browser from the rates baked into this page.</p>
+    <div class="two-col">
+      <div class="card"><span class="num">1</span><h3>Enter an amount</h3><p>Type any amount, or tap a quick amount. Use the &ldquo;From&rdquo; and &ldquo;To&rdquo; lists to pick your two currencies &mdash; start typing a code or name in the list to find it faster.</p></div>
+      <div class="card"><span class="num">2</span><h3>Read the result</h3><p>The result updates as you type. Under it you&rsquo;ll see the exact rate used, so you can check the maths yourself, and the reverse rate &mdash; what 1 unit of the second currency is worth in the first.</p></div>
+      <div class="card"><span class="num">3</span><h3>Compare before you send</h3><p>Use the rates table to compare currencies at a glance, and the popular conversions for the pairs people check most. Before a real transfer, compare the provider&rsquo;s rate and fees &mdash; the rate you&rsquo;re offered is rarely the mid-market rate shown here.</p></div>
+      <div class="card"><h3>The formula</h3><p>All rates on this page are stored as units per 1 US dollar. A conversion goes through dollars in one step:</p><div class="formula">result = amount &divide; rate(from) &times; rate(to)</div><p>Example: 100 USD to INR is 100 &divide; 1 &times; 94.928524 = 9,492.85 INR at the snapshot rate.</p></div>
+    </div>
+  </section>
+
+  <section id="faq" aria-label="Frequently asked questions">
+    <h2>Frequently asked questions</h2>
+    <div style="max-width:780px">
+      <details>
+        <summary>Are these rates live?</summary>
+        <p>They are a <strong>dated snapshot</strong>, not a live feed: the rates published by ExchangeRate-API on <strong>3 November 2026 at 00:02 UTC (5:32 AM IST)</strong>. Exchange rates move constantly while markets are open, so for a large or time-sensitive transfer, check a live quote from your bank or transfer provider at the moment you send.</p>
+      </details>
+      <details>
+        <summary>What is a mid-market rate?</summary>
+        <p>The mid-market rate is the midpoint between the buy and sell prices on the global currency market &mdash; the &ldquo;real&rdquo; rate with no margin added. It&rsquo;s the fairest basis for comparison, but it isn&rsquo;t the rate you&rsquo;ll actually be offered: banks and transfer services add a spread, and often a fee, on top of it.</p>
+      </details>
+      <details>
+        <summary>Why is the rate my bank offers different?</summary>
+        <p>Banks and money-transfer apps buy currency cheaper than they sell it, and the difference is how they earn. They may also charge a flat or percentage fee, use a rate fixed earlier in the day, or add charges at the receiving end. Always compare the <strong>final amount the recipient gets</strong>, not just the headline rate.</p>
+      </details>
+      <details>
+        <summary>Which currencies can I convert?</summary>
+        <p>All <strong>166 currencies</strong> in the snapshot &mdash; major currencies like USD, EUR, GBP, INR, JPY and AED, plus many others from Afghan afghani (AFN) to Zambian kwacha (ZMW). If a currency isn&rsquo;t in the list, it wasn&rsquo;t in the source data for this snapshot.</p>
+      </details>
+      <details>
+        <summary>How are amounts rounded?</summary>
+        <p>Results are shown to two decimal places for most currencies, with more places when the value is very small (for example, converting a few rupees into Kuwaiti dinar). The underlying calculation uses the full published rate, so rounding only affects what&rsquo;s displayed, not the maths behind it.</p>
+      </details>
+      <details>
+        <summary>Does this page store what I type?</summary>
+        <p>No. Amounts and currency choices stay in your browser for this visit only. Nothing is sent to a server, no account is needed, and no cookies or saved data are used to track conversions.</p>
+      </details>
+      <details>
+        <summary>Can I use these figures for business or tax purposes?</summary>
+        <p>Use them as a guide only. For accounting, tax, or legal conversions, use the rate your bank applied on the transaction date, or the official rate your tax authority prescribes &mdash; this page is not financial advice.</p>
+      </details>
+    </div>
+  </section>
+
+  <section id="about" aria-label="About, privacy and disclaimer">
+    <h2>About this converter</h2>
+    <div class="info-grid">
+      <div class="card">
+        <h3>About</h3>
+        <p>A free, single-page currency converter built to do one job well: turn an amount in one currency into another, quickly and transparently, with the rate shown next to every answer. It covers 166 currencies and needs no sign-up.</p>
+      </div>
+      <div class="card">
+        <h3>Privacy</h3>
+        <p>Your conversions are private by design. This page collects no personal information, sets no tracking cookies, saves nothing to your device, and sends nothing you enter anywhere. The exchange rates are part of the page itself.</p>
+      </div>
+      <div class="card">
+        <h3>Disclaimer</h3>
+        <p>Rates are mid-market snapshot rates from ExchangeRate-API, dated 3 November 2026, and are provided for information only. They are not a quote, an offer, or financial advice, and actual exchange rates and fees will differ. Verify the final amount with your provider before completing a transaction.</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px">
+      <h3>Contact &amp; sources</h3>
+      <p>Rates source: <a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">ExchangeRate-API</a> (free rates, <a href="https://www.exchangerate-api.com/docs/free" target="_blank" rel="noopener">documentation</a>). Spot a problem with a figure on this page? Compare it against the source&rsquo;s current rates for the same date &mdash; this page intentionally shows the 3 November 2026 snapshot, so a difference from today&rsquo;s live rate is expected.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="color:var(--ink)">Currency Converter.</strong> Exchange-rate snapshot: 3 November 2026, 5:32 AM IST (00:02 UTC), via ExchangeRate-API. Figures are mid-market snapshot rates for information only &mdash; not live quotes and not financial advice.</p>
+    <p class="small">166 currencies &middot; Calculations happen in your browser &middot; Nothing you enter is stored or sent anywhere.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var RATES = {"AED":3.6725,"AFN":64.849095,"ALL":81.263165,"AMD":360.496225,"ANG":1.79,"AOA":941.523207,"ARS":1544.6507,"AUD":1.427896,"AWG":1.79,"AZN":1.700048,"BAM":1.747106,"BBD":2,"BDT":124.387897,"BGN":1.747106,"BHD":0.376,"BIF":2993.457365,"BMD":1,"BND":1.279132,"BOB":12.137169,"BRL":5.43751,"BSD":1,"BTN":94.933991,"BWP":14.1049,"BYN":2.960169,"BZD":2,"CAD":1.39809,"CDF":2315.687353,"CHF":0.819466,"CLF":0.025147,"CLP":993.985301,"CNH":6.648017,"CNY":6.665393,"COP":3197.305165,"CRC":454.916623,"CUP":24,"CVE":98.497647,"CZK":21.728904,"DJF":177.721,"DKK":6.667072,"DOP":60.667967,"DZD":135.672835,"EGP":55.415368,"ERN":15,"ETB":161.880262,"EUR":0.893269,"FJD":2.256787,"FKP":0.745746,"FOK":6.667067,"GBP":0.745737,"GEL":2.596121,"GGP":0.745746,"GHS":11.681294,"GIP":0.745746,"GMD":74.657433,"GNF":8839.341782,"GTQ":7.648702,"GYD":209.611039,"HKD":7.846694,"HNL":26.911321,"HRK":6.730427,"HTG":131.027027,"HUF":325.502618,"IDR":18144.899424,"ILS":3.140446,"IMP":0.745746,"INR":94.928524,"IQD":1517.812697,"IRR":1771503.869684,"ISK":121.34717,"JEP":0.745746,"JMD":158.895078,"JOD":0.709,"JPY":157.896122,"KES":129.980973,"KGS":87.454927,"KHR":4107.367979,"KID":1.427894,"KMF":439.465523,"KRW":1344.12576,"KWD":0.310972,"KYD":0.833333,"KZT":453.337185,"LAK":22353.304465,"LBP":89500,"LKR":332.322753,"LRD":170.250504,"LSL":16.613401,"LYD":6.428019,"MAD":9.819344,"MDL":17.960147,"MGA":4579.08627,"MKD":55.304824,"MMK":2098.633053,"MNT":3629.872606,"MOP":8.082056,"MRU":40.530488,"MUR":47.546228,"MVR":15.446201,"MWK":1743.324537,"MXN":18.614044,"MYR":4.070116,"MZN":63.798429,"NAD":16.613401,"NGN":1345.872636,"NIO":36.810663,"NOK":9.291419,"NPR":151.894385,"NZD":1.779045,"OMR":0.384497,"PAB":1,"PEN":3.46461,"PGK":4.533383,"PHP":63.433344,"PKR":276.692206,"PLN":3.945153,"PYG":5842.877529,"QAR":3.64,"RON":4.762858,"RSD":104.943551,"RUB":80.944621,"RWF":1478.595649,"SAR":3.75,"SBD":7.941011,"SCR":14.068139,"SDG":454.426707,"SEK":9.77955,"SGD":1.279119,"SHP":0.745746,"SLE":22.869551,"SLL":22869.551065,"SOS":571.661679,"SRD":37.640227,"SSP":6094.56955,"STN":21.885388,"SYP":121.735769,"SZL":16.613401,"THB":33.740315,"TJS":9.206516,"TMT":3.499925,"TND":3.002363,"TOP":2.386597,"TRY":49.993615,"TTD":6.758488,"TVD":1.427894,"TWD":32.589181,"TZS":2644.575199,"UAH":45.556951,"UGX":4114.343674,"USD":1,"UYU":40.278347,"UZS":11926.667965,"VES":891.1054,"VND":25743.911696,"VUV":118.908751,"WST":2.738058,"XAF":585.954031,"XCD":2.7,"XCG":1.79,"XDR":0.735544,"XOF":585.954031,"XPF":106.597028,"YER":236.193202,"ZAR":16.613417,"ZMW":20.250833,"ZWG":26.5581,"ZWL":26.5581};
+  var AS_OF = "3 November 2026, 5:32 AM IST";
+  var NAMES = {
+    USD:"US Dollar",EUR:"Euro",GBP:"British Pound",INR:"Indian Rupee",AED:"UAE Dirham",AFN:"Afghan Afghani",ALL:"Albanian Lek",AMD:"Armenian Dram",ANG:"Netherlands Antillean Guilder",AOA:"Angolan Kwanza",ARS:"Argentine Peso",AUD:"Australian Dollar",AWG:"Aruban Florin",AZN:"Azerbaijani Manat",BAM:"Bosnia-Herzegovina Convertible Mark",BBD:"Barbadian Dollar",BDT:"Bangladeshi Taka",BGN:"Bulgarian Lev",BHD:"Bahraini Dinar",BIF:"Burundian Franc",BMD:"Bermudian Dollar",BND:"Brunei Dollar",BOB:"Bolivian Boliviano",BRL:"Brazilian Real",BSD:"Bahamian Dollar",BTN:"Bhutanese Ngultrum",BWP:"Botswana Pula",BYN:"Belarusian Ruble",BZD:"Belize Dollar",CAD:"Canadian Dollar",CDF:"Congolese Franc",CHF:"Swiss Franc",CLF:"Chilean Unit of Account",CLP:"Chilean Peso",CNH:"Chinese Yuan (Offshore)",CNY:"Chinese Yuan",COP:"Colombian Peso",CRC:"Costa Rican Col\u00f3n",CUP:"Cuban Peso",CVE:"Cape Verdean Escudo",CZK:"Czech Koruna",DJF:"Djiboutian Franc",DKK:"Danish Krone",DOP:"Dominican Peso",DZD:"Algerian Dinar",EGP:"Egyptian Pound",ERN:"Eritrean Nakfa",ETB:"Ethiopian Birr",FJD:"Fijian Dollar",FKP:"Falkland Islands Pound",FOK:"Faroese Kr\u00f3na",GEL:"Georgian Lari",GGP:"Guernsey Pound",GHS:"Ghanaian Cedi",GIP:"Gibraltar Pound",GMD:"Gambian Dalasi",GNF:"Guinean Franc",GTQ:"Guatemalan Quetzal",GYD:"Guyanese Dollar",HKD:"Hong Kong Dollar",HNL:"Honduran Lempira",HRK:"Croatian Kuna",HTG:"Haitian Gourde",HUF:"Hungarian Forint",IDR:"Indonesian Rupiah",ILS:"Israeli New Shekel",IMP:"Isle of Man Pound",IQD:"Iraqi Dinar",IRR:"Iranian Rial",ISK:"Icelandic Kr\u00f3na",JEP:"Jersey Pound",JMD:"Jamaican Dollar",JOD:"Jordanian Dinar",JPY:"Japanese Yen",KES:"Kenyan Shilling",KGS:"Kyrgyzstani Som",KHR:"Cambodian Riel",KID:"Kiribati Dollar",KMF:"Comorian Franc",KRW:"South Korean Won",KWD:"Kuwaiti Dinar",KYD:"Cayman Islands Dollar",KZT:"Kazakhstani Tenge",LAK:"Lao Kip",LBP:"Lebanese Pound",LKR:"Sri Lankan Rupee",LRD:"Liberian Dollar",LSL:"Lesotho Loti",LYD:"Libyan Dinar",MAD:"Moroccan Dirham",MDL:"Moldovan Leu",MGA:"Malagasy Ariary",MKD:"Macedonian Denar",MMK:"Myanmar Kyat",MNT:"Mongolian Tugrik",MOP:"Macanese Pataca",MRU:"Mauritanian Ouguiya",MUR:"Mauritian Rupee",MVR:"Maldivian Rufiyaa",MWK:"Malawian Kwacha",MXN:"Mexican Peso",MYR:"Malaysian Ringgit",MZN:"Mozambican Metical",NAD:"Namibian Dollar",NGN:"Nigerian Naira",NIO:"Nicaraguan C\u00f3rdoba",NOK:"Norwegian Krone",NPR:"Nepalese Rupee",NZD:"New Zealand Dollar",OMR:"Omani Rial",PAB:"Panamanian Balboa",PEN:"Peruvian Sol",PGK:"Papua New Guinean Kina",PHP:"Philippine Peso",PKR:"Pakistani Rupee",PLN:"Polish Zloty",PYG:"Paraguayan Guaran\u00ed",QAR:"Qatari Riyal",RON:"Romanian Leu",RSD:"Serbian Dinar",RUB:"Russian Ruble",RWF:"Rwandan Franc",SAR:"Saudi Riyal",SBD:"Solomon Islands Dollar",SCR:"Seychellois Rupee",SDG:"Sudanese Pound",SEK:"Swedish Krona",SGD:"Singapore Dollar",SHP:"St Helena Pound",SLE:"Sierra Leonean Leone",SLL:"Sierra Leonean Leone",SOS:"Somali Shilling",SRD:"Surinamese Dollar",SSP:"South Sudanese Pound",STN:"S\u00e3o Tom\u00e9 & Pr\u00edncipe Dobra",SYP:"Syrian Pound",SZL:"Swazi Lilangeni",THB:"Thai Baht",TJS:"Tajikistani Somoni",TMT:"Turkmenistani Manat",TND:"Tunisian Dinar",TOP:"Tongan Pa\u02bbanga",TRY:"Turkish Lira",TTD:"Trinidad & Tobago Dollar",TVD:"Tuvaluan Dollar",TWD:"Taiwan Dollar",TZS:"Tanzanian Shilling",UAH:"Ukrainian Hryvnia",UGX:"Ugandan Shilling",UYU:"Uruguayan Peso",UZS:"Uzbekistani Som",VES:"Venezuelan Bol\u00edvar",VND:"Vietnamese Dong",VUV:"Vanuatu Vatu",WST:"Samoan Tala",XAF:"Central African CFA Franc",XCD:"East Caribbean Dollar",XCG:"Caribbean Guilder",XDR:"Special Drawing Rights",XOF:"West African CFA Franc",XPF:"CFP Franc",YER:"Yemeni Rial",ZAR:"South African Rand",ZMW:"Zambian Kwacha",ZWG:"Zimbabwe Gold",ZWL:"Zimbabwe Dollar"
+  };
+  var SYMBOLS = {USD:"$",EUR:"\u20ac",GBP:"\u00a3",INR:"\u20b9",JPY:"\u00a5",CNY:"\u00a5",KRW:"\u20a9",RUB:"\u20bd",THB:"\u0e3f",PHP:"\u20b1",ILS:"\u20aa",AED:"AED ",SAR:"SAR ",QAR:"QAR ",KWD:"KWD "};
+  var POPULAR = ["USD","EUR","GBP","INR","AED","SAR","AUD","CAD","CHF","CNY","JPY","SGD","NZD","PKR","BDT","PHP","NPR","THB","MYR","ZAR","TRY","RUB","KRW"];
+  var PRESETS = [["USD","INR"],["EUR","INR"],["GBP","INR"],["USD","EUR"],["USD","GBP"],["AED","INR"],["SAR","INR"],["USD","PKR"],["USD","BDT"],["USD","PHP"],["USD","JPY"],["USD","AED"]];
+  var POPCARDS = [["USD","INR"],["EUR","INR"],["GBP","INR"],["USD","EUR"],["USD","GBP"],["AED","INR"],["SAR","INR"],["USD","PKR"],["USD","BDT"],["USD","JPY"],["USD","AED"],["EUR","USD"]];
+
+  function nameOf(c){ return NAMES[c] || c; }
+  function fmt(n, maxDec){
+    if(!isFinite(n)) return "\u2014";
+    var abs = Math.abs(n);
+    var dec = (typeof maxDec === "number") ? maxDec : (abs >= 100 ? 2 : abs >= 1 ? 2 : abs >= 0.01 ? 4 : 6);
+    return n.toLocaleString("en-US", {minimumFractionDigits: dec, maximumFractionDigits: dec});
+  }
+  function fmtMoney(n, code){
+    var sym = SYMBOLS[code];
+    if(sym) return sym + fmt(n);
+    return fmt(n) + " " + code;
+  }
+  function rate(from, to){ return RATES[to] / RATES[from]; }
+  function convert(amount, from, to){ return amount / RATES[from] * RATES[to]; }
+
+  var fromSel = document.getElementById("from-cur");
+  var toSel = document.getElementById("to-cur");
+  var baseSel = document.getElementById("base-cur");
+  var amountEl = document.getElementById("amount");
+
+  function fillSelect(sel, selected){
+    sel.innerHTML = "";
+    var pop = document.createElement("optgroup"); pop.label = "Popular currencies";
+    POPULAR.forEach(function(c){
+      if(!RATES[c]) return;
+      var o = document.createElement("option"); o.value = c; o.textContent = c + " \u2014 " + nameOf(c); pop.appendChild(o);
+    });
+    sel.appendChild(pop);
+    var all = document.createElement("optgroup"); all.label = "All other currencies";
+    Object.keys(RATES).sort().forEach(function(c){
+      if(POPULAR.indexOf(c) !== -1) return; // already listed under Popular currencies
+      var o = document.createElement("option"); o.value = c; o.textContent = c + " \u2014 " + nameOf(c); all.appendChild(o);
+    });
+    sel.appendChild(all);
+    sel.value = selected;
+  }
+  fillSelect(fromSel, "USD");
+  fillSelect(toSel, "INR");
+  fillSelect(baseSel, "USD");
+
+  var resultLabel = document.getElementById("result-label");
+  var resultValue = document.getElementById("result-value");
+  var resultSub = document.getElementById("result-sub");
+  var fromName = document.getElementById("from-name");
+  var toName = document.getElementById("to-name");
+  var errEl = document.getElementById("amount-error");
+  var copyNote = document.getElementById("copy-note");
+
+  function update(){
+    var amount = parseFloat(amountEl.value);
+    var from = fromSel.value, to = toSel.value;
+    fromName.textContent = "\u2014 " + nameOf(from);
+    toName.textContent = "\u2014 " + nameOf(to);
+    copyNote.textContent = "";
+    if(amountEl.value === "" || isNaN(amount) || amount < 0){
+      errEl.classList.add("show");
+      resultLabel.textContent = "Enter an amount to convert";
+      resultValue.textContent = "\u2014";
+      resultSub.textContent = "";
+      return;
+    }
+    errEl.classList.remove("show");
+    var out = convert(amount, from, to);
+    var r = rate(from, to);
+    var inv = rate(to, from);
+    resultLabel.textContent = fmt(amount) + " " + nameOf(from) + " (" + from + ") equals";
+    resultValue.textContent = fmtMoney(out, to);
+    resultSub.innerHTML = "";
+    var codeEl = document.createElement("code");
+    resultSub.appendChild(document.createTextNode("1 " + from + " = "));
+    codeEl.textContent = fmt(r, r < 0.01 ? 6 : r < 1 ? 4 : 4) + " " + to;
+    resultSub.appendChild(codeEl);
+    resultSub.appendChild(document.createTextNode("  \u00b7  1 " + to + " = " + fmt(inv, inv < 0.01 ? 6 : inv < 1 ? 4 : 4) + " " + from + "  \u00b7  Rates as of " + AS_OF));
+    document.querySelectorAll(".chip").forEach(function(ch){
+      ch.setAttribute("aria-pressed", String(parseFloat(ch.getAttribute("data-amt")) === amount));
+    });
+  }
+
+  amountEl.addEventListener("input", update);
+  fromSel.addEventListener("change", update);
+  toSel.addEventListener("change", update);
+
+  document.getElementById("swap").addEventListener("click", function(){
+    var f = fromSel.value; fromSel.value = toSel.value; toSel.value = f; update();
+  });
+  document.querySelectorAll(".chip").forEach(function(ch){
+    ch.addEventListener("click", function(){ amountEl.value = ch.getAttribute("data-amt"); update(); amountEl.focus(); });
+  });
+
+  // Presets
+  var presetRow = document.getElementById("preset-row");
+  PRESETS.forEach(function(p){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "preset"; b.textContent = p[0] + " \u2192 " + p[1];
+    b.addEventListener("click", function(){ fromSel.value = p[0]; toSel.value = p[1]; update(); document.getElementById("converter").scrollIntoView({behavior:"smooth", block:"start"}); });
+    presetRow.appendChild(b);
+  });
+
+  // Popular cards
+  var popGrid = document.getElementById("pop-grid");
+  POPCARDS.forEach(function(p){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "pop-card";
+    var r1 = rate(p[0], p[1]);
+    b.innerHTML = "";
+    var pair = document.createElement("span"); pair.className = "pop-pair";
+    pair.textContent = p[0] + " "; var arr = document.createElement("span"); arr.className = "arr"; arr.textContent = "\u2192"; pair.appendChild(arr); pair.appendChild(document.createTextNode(" " + p[1]));
+    var rv = document.createElement("div"); rv.className = "pop-rate"; rv.textContent = "1 " + p[0] + " = " + fmtMoney(r1, p[1]);
+    var sub = document.createElement("p"); sub.className = "pop-sub"; sub.textContent = "100 " + p[0] + " = " + fmtMoney(convert(100, p[0], p[1]), p[1]) + "  \u00b7  " + nameOf(p[0]) + " to " + nameOf(p[1]);
+    b.appendChild(pair); b.appendChild(rv); b.appendChild(sub);
+    b.addEventListener("click", function(){ fromSel.value = p[0]; toSel.value = p[1]; update(); document.getElementById("converter").scrollIntoView({behavior:"smooth", block:"start"}); });
+    popGrid.appendChild(b);
+  });
+
+  // Rates table
+  var tbody = document.getElementById("rates-body");
+  var searchEl = document.getElementById("rate-search");
+  var thOne = document.getElementById("th-one");
+  var thHundred = document.getElementById("th-hundred");
+  var countEl = document.getElementById("rates-count");
+  function renderTable(){
+    var base = baseSel.value;
+    var q = searchEl.value.trim().toLowerCase();
+    thOne.textContent = "1 " + base + " =";
+    thHundred.textContent = "100 " + base + " =";
+    var codes = Object.keys(RATES).filter(function(c){ return c !== base; }).sort();
+    var shown = 0;
+    tbody.innerHTML = "";
+    codes.forEach(function(c){
+      if(q && (c.toLowerCase().indexOf(q) === -1 && nameOf(c).toLowerCase().indexOf(q) === -1)) return;
+      shown++;
+      var tr = document.createElement("tr");
+      var td1 = document.createElement("td"); td1.className = "code"; td1.textContent = c;
+      var td2 = document.createElement("td"); td2.className = "cur-name"; td2.textContent = nameOf(c);
+      var td3 = document.createElement("td"); td3.className = "num-r"; td3.setAttribute("data-label", "1 " + base + " ="); td3.textContent = fmtMoney(rate(base, c), c);
+      var td4 = document.createElement("td"); td4.className = "num-r"; td4.setAttribute("data-label", "100 " + base + " ="); td4.textContent = fmtMoney(convert(100, base, c), c);
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+      tbody.appendChild(tr);
+    });
+    if(shown === 0){
+      var tr = document.createElement("tr"); tr.className = "empty-row";
+      var td = document.createElement("td"); td.colSpan = 4; td.textContent = "No currencies match \u201c" + searchEl.value.trim() + "\u201d. Try a code like EUR or a name like yen.";
+      tr.appendChild(td); tbody.appendChild(tr);
+    }
+    countEl.textContent = "Showing " + shown + " of 165 currencies against " + base + " (" + nameOf(base) + ").";
+  }
+  baseSel.addEventListener("change", renderTable);
+  searchEl.addEventListener("input", renderTable);
+
+  // Copy
+  document.getElementById("copy-btn").addEventListener("click", function(){
+    var text = resultLabel.textContent + " " + resultValue.textContent + " (" + resultSub.textContent + ")";
+    function done(){ copyNote.textContent = "Copied to clipboard."; }
+    function fail(){ copyNote.textContent = "Copy didn\u2019t work in this browser \u2014 select the result text to copy it."; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fail);
+    } else { fail(); }
+  });
+
+  document.getElementById("conv-form").addEventListener("submit", function(e){ e.preventDefault(); update(); });
+
+  update();
+  renderTable();
+})();
+</script>
+</body>
+</html>
